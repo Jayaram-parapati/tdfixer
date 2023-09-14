@@ -5,8 +5,8 @@ from pymongo import MongoClient
 app = Flask(__name__)
 mongoclient = MongoClient("mongodb://localhost:27017")
 
-db = mongoclient["test"]
-ents = db["entities"]
+db = mongoclient["training_db"]
+ents = db["mix_entities"]
 
 
 @app.route("/")
@@ -39,6 +39,19 @@ def remove_ent():
     id = data["id"]
     res = ents.update_one({"_id":ObjectId(id)},{"$pull":{"entities":ent}})
     # print(res)
+    return data
+
+@app.route("/edit_ent_values/", methods=["GET","POST"])
+def edit_ent():
+    data = request.get_json()
+    ent = data["ent"]
+    # print(ent)
+    ent[0],ent[1] = int(ent[0]),int(ent[1])
+    id = data["id"]
+    
+
+
+    res = ents.update_one({"_id":ObjectId(id)},{"$push":{"entities":ent}})
     return data
 
 @app.route('/favicon.ico')

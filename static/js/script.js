@@ -8,6 +8,7 @@ var config = {
 function displayTD(index) {
   var textele = document.querySelector("#tdtext");
   var entsele = document.querySelector("#tdents");
+
   var td = config["currentTD"];
   var _text = td["text"];
   textele.innerHTML = _text;
@@ -15,6 +16,7 @@ function displayTD(index) {
   var prevent = null;
   var mark = true;
   var max = _text.length;
+
   for (ent of td["entities"]) {
     [start, end, label] = ent;
     start = parseInt(start);
@@ -57,7 +59,8 @@ function displayTD(index) {
         : "list-group-item-danger"
     }">${JSON.stringify(
       ent
-    )} <span class="controls float-end"><a class="btn btn-sm btn-outline-secondary me-2" onclick="editent(this)">✏</a>&nbsp;<a class="btn btn-sm btn-outline-secondary" onclick="removeent(this)">❌</a></li>`;
+    )}<span class="controls float-end"><a class="btn btn-sm btn-outline-secondary me-2" onclick="editent(this)">✏</a>&nbsp;<a class="btn btn-sm btn-outline-secondary" onclick="removeent(this)">❌</a><div class="edit_ent" style="display: none;"><input type="text" class="edit_ent_value1"><input type="text" class="edit_ent_value2">
+    <button type="submit"  onclick="edit_ent_values(this)">Edit</button></div></li>`;
   }
 }
 
@@ -112,7 +115,7 @@ window.onload = () => {
 // });
 
 function hilit(ele) {
-  //   console.log(ele.dataset.ent);
+  // console.log(ele.dataset.ent);
   var _text = config["currentTD"]["text"];
   var ent = JSON.parse(ele.dataset.ent);
   [s, e, l, v] = ent;
@@ -133,7 +136,9 @@ function removeent(ele) {
   console.log(ele, parent);
   var td = config["currentTD"];
   var ent = JSON.parse(parent.dataset.ent);
+  console.log(ent);
   ent.pop();
+
   var url = "/removeent/";
   var data = { id: td["_id"], ent: ent };
   //todo: post this data to url
@@ -153,5 +158,48 @@ function removeent(ele) {
 }
 
 function editent(ele) {
-  alert("not implemented yet");
+  // var edit_ent = document.getElementById("edit_ent");
+  // edit_ent.style.display = "block";
+  
+  var listItem = ele.closest("li");
+  var editEntDiv = listItem.querySelector(".edit_ent");
+  editEntDiv.style.display = "block";
+  
+
+
+}
+
+function edit_ent_values(ele) {
+  var listItem = ele.closest("li");
+  var val1 = listItem.querySelector(".edit_ent_value1");
+  var val2 = listItem.querySelector(".edit_ent_value2");
+  let value1 = val1.value;
+  let value2 = val2.value;
+
+  // console.log(value1,value2)
+
+  var td = config["currentTD"];
+  var text = td["text"];
+  var sub_string = text.substring(value1, value2);
+  // console.log(sub_string)
+  let ent = [value1, value2, sub_string];
+  console.log(ent);
+
+  var url = "/edit_ent_values/";
+  var data = { id: td["_id"], ent: ent };
+  //todo: post this data to url
+  fetch(url, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  })
+    .then((res) => res.json())
+    .then((res) => {
+      console.log(res);
+    });
+    val1.value = "";
+    val2.value = "";
 }
